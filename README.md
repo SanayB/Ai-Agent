@@ -1,2 +1,0 @@
-# Ai-Agent
-Internship Project
