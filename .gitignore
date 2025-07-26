@@ -1,0 +1,10 @@
+# Virtual environment
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Other common ignores
+*.log
+*.DS_Store
