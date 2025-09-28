@@ -22,7 +22,14 @@ embedded = []
 for item in vulns:
     cve = item.get("cve", {})
     cve_id = cve.get("id", "")
-    
+    cvss_score = None
+    metrics = cve.get("metrics", {})
+    # print(metrics)
+    cvss_v2 = metrics.get("cvssMetricV2", [])
+    # print(cvss_v2)
+    if cvss_v2:
+        cvss_score = cvss_v2[0].get("cvssData", {}).get("baseScore")
+        
     # Find English description
     desc_list = cve.get("descriptions", [])
     en_desc = next((d["value"] for d in desc_list if d.get("lang") == "en"), None)
@@ -32,7 +39,8 @@ for item in vulns:
         embedded.append({
             "id": cve_id,
             "description": en_desc,
-            "embedding": embedding
+            "embedding": embedding,
+            "cvss_score": cvss_score,
         })
 
 # Save to new file

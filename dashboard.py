@@ -1,8 +1,11 @@
 import streamlit as st
-import json
 import chromadb
 from langchain_ollama import OllamaLLM
 from sentence_transformers import SentenceTransformer
+
+from streamlit_autorefresh import st_autorefresh
+
+
 
 # CONFIG
 CHROMA_DB_DIR = "E:/my code/chromadb_store"
@@ -35,10 +38,12 @@ def load_recent_cves(n=5):
 def summarize_recent(docs):
     llm = OllamaLLM(model="gemma3", temperature=0.3)
     descriptions = [doc for doc, meta in docs if doc]
+    print(descriptions)
     if not descriptions:
         return "No CVE descriptions available to summarize."
 
     prompt = (
+
         "You are a cybersecurity analyst.\n\n"
         "Summarize the following CVE vulnerability descriptions into bullet points.\n\n"
         "Descriptions:\n"
@@ -53,13 +58,63 @@ def summarize_recent(docs):
     )
     return llm.invoke(prompt)
 
+# if we want dont want to run ollama on pc we can run on kaggle(gpu for bigger models)
+
+
+# def summarize_recent(docs):
+#     descriptions = [doc for doc, meta in docs if doc]
+#     if not descriptions:
+#         return "No CVE descriptions available to summarize."
+
+#     prompt = (
+#         "You are a cybersecurity analyst.\n\n"
+#         "Summarize the following CVE vulnerability descriptions into bullet points.\n\n"
+#         "Descriptions:\n"
+#         f"{descriptions}\n\n"
+#         "For each CVE, include:\n"
+#         "- CVE ID (if available)\n"
+#         "- What it affects\n"
+#         "- Severity (if known)\n"
+#         "- Risk summary\n"
+#         "- 1 recommendation\n"
+#         "Format: Markdown bullet points."
+#     )
+
+#     try:
+#         response = requests.post(
+#             "https://main-oriole-grossly.ngrok-free.app/api/generate",
+#             json={"model": "gemma3", "prompt": prompt},
+#             timeout=30  # optional: prevent hanging
+#         )
+#         response.raise_for_status()
+
+#         # Handle responses that may contain multiple JSON lines or extra output
+#         raw = response.text.strip()
+
+#         # Try to extract the first valid JSON object
+#         first_brace = raw.find("{")
+#         last_brace = raw.rfind("}")
+#         if first_brace == -1 or last_brace == -1:
+#             return "⚠️ Unexpected response format from remote Ollama."
+
+#         json_str = raw[first_brace:last_brace+1]
+#         data = json.loads(json_str)
+
+#         return data.get("response", "✅ Remote call succeeded, but no 'response' field found.")
+
+#     except requests.RequestException as e:
+#         return f"⚠️ Error contacting remote Ollama: {e}"
+#     except json.JSONDecodeError as e:
+#         return f"⚠️ Failed to decode JSON from remote Ollama: {e}"
+
+
 # Section: Recent CVEs
 recent = load_recent_cves()
 
 if not recent:
-    st.warning("⚠️ No CVEs found in the database.")
+    st.warning(" No CVEs found in the database.")
 else:
-    st.subheader("📝 Recent CVEs")
+    st.subheader(" Recent CVEs")
     for i, (doc, meta) in enumerate(recent):
         cve_id = meta.get("id", "N/A")
         score = meta.get("cvss_score", "N/A")
@@ -67,7 +122,7 @@ else:
         st.caption(doc)
 
     # Summary Section
-    st.subheader("📄 LLM Summary (Last 5 CVEs)")
+    st.subheader(" LLM Summary (Last 5 CVEs)")
     summary = summarize_recent(recent)
     st.markdown(summary)
 
@@ -103,3 +158,7 @@ if query:
             st.caption(docs[i])
     else:
         st.warning("No matching CVEs found.")
+
+
+#Auto refresh after 10 minutues
+st_autorefresh(interval=600000, key="auto_refresh")

@@ -15,6 +15,7 @@ with open("embedded_cves.json", "r", encoding="utf-8") as f:
 ids = [entry["id"] for entry in data]
 docs = [entry["description"] for entry in data]
 embeds = [entry["embedding"] for entry in data]
+scores = [entry["cvss_score"] for entry in data]#display score on streamlit
 
 # Optional: Split into chunks if large
 BATCH_SIZE = 500

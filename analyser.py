@@ -1,3 +1,7 @@
+
+#create embeddings for the newly updated cves
+
+
 import json
 import chromadb
 from sentence_transformers import SentenceTransformer
